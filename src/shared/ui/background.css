@@ -1,0 +1,32 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, Arial, sans-serif;
+  background: #090b14;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top, rgba(54, 88, 255, 0.18), transparent 32%),
+    linear-gradient(180deg, #0d1120 0%, #090b14 60%, #05060b 100%);
+}
+
+#app {
+  position: relative;
+}
+
+canvas {
+  display: block;
+}
