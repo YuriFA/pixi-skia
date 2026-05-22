@@ -3,10 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pixi Modular Template</title>
+    <title>Pixi and Skia render</title>
   </head>
   <body>
-    <div id="app"></div>
+    <main class="container">
+      <section class="panel">
+        <span class="panel__label panel__label--pixi">Pixi</span>
+        <div class="app" id="root-pixi"></div>
+      </section>
+
+      <section class="panel">
+        <span class="panel__label panel__label--skia">Skia</span>
+        <div class="app" id="root-skia"></div>
+      </section>
+    </main>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

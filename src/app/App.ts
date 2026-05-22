@@ -1,62 +1,54 @@
-import type { AppModule, AppSize, ModuleContext } from '../core/contracts/AppModule';
-import { createPixiApp } from '../core/pixi/createPixiApp';
-import { createDemoModule } from '../modules/demo';
+import { createPixiApp } from '../pixi/createPixiApp';
+import { bootstrapCanvasKit } from '../skia/bootstrapCanvasKit';
+import { Application, Container } from 'pixi.js-legacy';
+import { SkiaPixiRenderer } from '../skia/SkiaPixiRenderer';
+import { createDemoScene } from '../scene/createDemoScene';
 
 export class App {
-  private readonly pixiApp;
-  private readonly modules: AppModule[];
+  private pixiApp: Application | null = null;
+  private skiaRenderer: SkiaPixiRenderer | null = null;
+  private scene: Container | null = null;
+  private isStarted = false;
 
-  public constructor(private readonly host: HTMLElement) {
-    this.pixiApp = createPixiApp(host);
-    this.modules = [createDemoModule()];
-  }
+  public constructor(
+    private readonly pixiRoot: HTMLElement,
+    private readonly skiaRoot: HTMLElement
+  ) { }
 
-  public start(): void {
-    const context: ModuleContext = {
-      app: this.pixiApp,
-      stage: this.pixiApp.stage,
-    };
+  public async start(): Promise<void> {
+    if (this.isStarted) {
+      return;
+    }
 
-    this.modules.forEach((module) => {
-      module.mount(context);
-    });
+    this.scene = createDemoScene();
 
-    this.handleResize();
-    window.addEventListener('resize', this.handleResize);
-    this.pixiApp.ticker.add(this.handleTick);
+    this.pixiApp = createPixiApp(this.pixiRoot);
+    this.pixiApp.stage.addChild(this.scene);
+
+    this.skiaRenderer = await bootstrapCanvasKit(this.skiaRoot);
+    this.skiaRenderer.render(this.scene);
+
+    this.isStarted = true;
   }
 
   public destroy(): void {
-    this.pixiApp.ticker.remove(this.handleTick);
-    window.removeEventListener('resize', this.handleResize);
+    if (!this.isStarted) {
+      return;
+    }
 
-    [...this.modules].reverse().forEach((module) => {
-      module.destroy?.();
-    });
+    this.skiaRenderer?.destroy();
+    this.skiaRenderer = null;
 
-    this.pixiApp.destroy(true, {
-      children: true,
-    });
+    if (this.pixiApp && this.scene) {
+      this.pixiApp.stage.removeChild(this.scene);
+    }
 
-    this.host.replaceChildren();
+    this.scene?.destroy();
+    this.scene = null;
+    this.pixiApp?.destroy(true, { children: false });
+    this.pixiApp = null;
+    this.isStarted = false;
   }
 
-  private readonly handleTick = (): void => {
-    const deltaMS = this.pixiApp.ticker.deltaMS;
 
-    this.modules.forEach((module) => {
-      module.update?.(deltaMS);
-    });
-  };
-
-  private readonly handleResize = (): void => {
-    const size: AppSize = {
-      width: window.innerWidth,
-      height: window.innerHeight,
-    };
-
-    this.modules.forEach((module) => {
-      module.resize?.(size);
-    });
-  };
 }
