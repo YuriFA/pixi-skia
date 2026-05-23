@@ -24,12 +24,8 @@ export const renderDemoScene = ({ canvasKit, canvas }: { canvasKit: CanvasKit, c
   yellowStroke.setColor(canvasKit.Color(255, 255, 0, 1))
 
   function draw() {
-    // =========================
     // subContainer
-    // =========================
-
     canvas.save()
-
     canvas.translate(75, 50)
 
     // g3
@@ -37,12 +33,11 @@ export const renderDemoScene = ({ canvasKit, canvas }: { canvasKit: CanvasKit, c
 
     canvas.rotate(-20, 0, 0)
 
-    const path1Builder = new canvasKit.PathBuilder()
-    path1Builder.moveTo(0, 0)
-    path1Builder.lineTo(150, 100)
-    // path1Builder.close()
+    const path1 = new canvasKit.Path()
+    path1.moveTo(0, 0)
+    path1.lineTo(150, 100)
 
-    canvas.drawPath(path1Builder.detach(), whiteStroke)
+    canvas.drawPath(path1, whiteStroke)
 
     canvas.restore()
 
@@ -51,57 +46,50 @@ export const renderDemoScene = ({ canvasKit, canvas }: { canvasKit: CanvasKit, c
 
     canvas.rotate(20, 0, 0)
 
-    const path2Builder = new canvasKit.PathBuilder()
-    path2Builder.moveTo(0, 70)
-    path2Builder.lineTo(150, -30)
-    // path2Builder.close()
+    const path2 = new canvasKit.Path()
+    path2.moveTo(0, 70)
+    path2.lineTo(150, -30)
 
-    canvas.drawPath(path2Builder.detach(), yellowStroke)
-
-    canvas.restore()
+    canvas.drawPath(path2, yellowStroke)
 
     canvas.restore()
 
-    // // =========================
-    // // g1
-    // // =========================
-    //
-    // canvas.save()
-    //
-    // canvas.translate(200, 100)
-    // canvas.rotate(30, 0, 0)
-    //
-    // const rectOval = canvasKit.LTRBRect(
-    //   -200,
-    //   -100,
-    //   200,
-    //   100,
-    // )
-    //
-    // canvas.drawOval(rectOval, paintFillRed)
-    //
-    // canvas.restore()
-    //
-    // // =========================
-    // // g2
-    // // =========================
-    //
-    // canvas.save()
-    //
-    // canvas.translate(120, 60)
-    // canvas.rotate(15, 0, 0)
-    // canvas.scale(1.5, 1.7)
-    //
-    // const rect = canvasKit.LTRBRect(
-    //   -50,
-    //   -75,
-    //   50,
-    //   75,
-    // )
-    //
-    // canvas.drawRect(rect, paintFillBlue)
-    //
-    // canvas.restore()
+    canvas.restore()
+
+    // g1
+    canvas.save()
+
+    canvas.translate(300, 200)
+    canvas.rotate(-30, 0, 0)
+
+    const rectOval = canvasKit.LTRBRect(
+      -100,
+      -50,
+      100,
+      50,
+    )
+
+    canvas.drawOval(rectOval, paintFillRed)
+
+    canvas.restore()
+
+    // g2
+    canvas.save()
+
+    canvas.translate(120, 60)
+    canvas.rotate(15, 0, 0)
+    canvas.scale(1.5, 1.7)
+
+    const rect = canvasKit.LTRBRect(
+      0,
+      75,
+      30,
+      125,
+    )
+
+    canvas.drawRect(rect, paintFillBlue)
+
+    canvas.restore()
   }
 
   draw()

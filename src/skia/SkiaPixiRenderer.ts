@@ -1,6 +1,6 @@
 import type { Container } from 'pixi.js-legacy';
 import type { CanvasKit, Surface } from 'canvaskit-wasm';
-// import { renderPixiContainer } from './renderPixiContainer';
+import { renderPixiContainer } from './renderPixiContainer';
 import { renderDemoScene } from './renderDemoScene';
 import { APP_CONFIG } from '../shared/config/appConfig';
 
@@ -74,8 +74,8 @@ export class SkiaPixiRenderer {
     skCanvas.save();
     skCanvas.scale(this.pixelRatio, this.pixelRatio);
 
-    // renderPixiContainer({ canvas: skCanvas, container, canvasKit: this.options.canvasKit });
-    renderDemoScene({ canvas: skCanvas, canvasKit: this.options.canvasKit });
+    renderPixiContainer({ canvas: skCanvas, container, canvasKit: this.options.canvasKit });
+    // renderDemoScene({ canvas: skCanvas, canvasKit: this.options.canvasKit });
 
     skCanvas.restore();
     this.surface.flush();
