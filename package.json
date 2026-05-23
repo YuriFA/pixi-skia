@@ -14,7 +14,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.28.1",
   "dependencies": {
-    "canvaskit-wasm": "^0.41.1",
+    "canvaskit-wasm": "^0.40.0",
     "pixi.js-legacy": "7.4.2"
   },
   "devDependencies": {
