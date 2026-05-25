@@ -19,11 +19,63 @@ const pixiMatrixToSkiaMatrix = (matrix: PIXI.Matrix) => {
   return [matrix.a, matrix.c, matrix.tx, matrix.b, matrix.d, matrix.ty];
 };
 
-const renderPixiSprite = (_options: {
+// TODO: Try to search another way to get image from PIXI.Sprite
+const getCanvasKitImageFromSprite = ({
+  canvasKit,
+  sprite,
+}: {
+  canvasKit: CanvasKit;
+  sprite: PIXI.Sprite;
+}) => {
+  const source =
+    'source' in sprite.texture.baseTexture.resource
+      ? (sprite.texture.baseTexture.resource?.source as CanvasImageSource)
+      : null;
+
+  if (!source) {
+    return null;
+  }
+
+  // const src = sprite.texture.baseTexture.textureCacheIds[0];
+  // const asset = PIXI.Assets.cache.get(src);
+  //
+  // console.log('getCanvasKitImageFromSprite', { src, asset });
+  return canvasKit.MakeImageFromCanvasImageSource(source);
+};
+
+const renderPixiSprite = ({
+  canvasKit,
+  canvas,
+  sprite,
+}: {
   canvasKit: CanvasKit;
   canvas: Canvas;
   sprite: PIXI.Sprite;
-}): void => {};
+}): void => {
+  const image = getCanvasKitImageFromSprite({ canvasKit, sprite });
+  if (!image) {
+    return;
+  }
+
+  const { frame } = sprite.texture;
+  canvas.concat(pixiMatrixToSkiaMatrix(sprite.worldTransform));
+  const paint = new canvasKit.Paint();
+  paint.setAlphaf(sprite.worldAlpha);
+
+  canvas.drawImageRect(
+    image,
+    canvasKit.XYWHRect(frame.x, frame.y, frame.width, frame.height),
+    canvasKit.XYWHRect(
+      -sprite.anchor.x * sprite.width,
+      -sprite.anchor.y * sprite.height,
+      sprite.width,
+      sprite.height,
+    ),
+    paint,
+    false,
+  );
+  image.delete();
+};
 
 const createGraphicsPaint = (
   data: PIXI.GraphicsData,
@@ -80,12 +132,12 @@ const renderPixiGraphics = ({
 }): void => {
   canvas.concat(pixiMatrixToSkiaMatrix(graphics.worldTransform));
 
-  console.log(
-    'graphics.geometry.graphicsData',
-    graphics.zIndex,
-    graphics.worldAlpha,
-    graphics.geometry.graphicsData[0],
-  );
+  // console.log(
+  //   'graphics.geometry.graphicsData',
+  //   graphics.zIndex,
+  //   graphics.worldAlpha,
+  //   graphics.geometry.graphicsData[0],
+  // );
   for (const data of graphics.geometry.graphicsData) {
     // console.log('[graphicsData]', data)
     const paint = createGraphicsPaint(data, canvasKit, graphics.worldAlpha);
@@ -102,6 +154,7 @@ const renderPixiGraphics = ({
           ...paint,
           draw: (p) => {
             canvas.drawPath(path, p);
+            path.delete();
           },
         });
         break;

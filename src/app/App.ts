@@ -1,7 +1,7 @@
 import { Application, Container } from 'pixi.js-legacy';
 
 import { createPixiApp } from '../pixi/createPixiApp';
-import { createDemoScene } from '../scene/createDemoScene';
+import { createDemoScene, loadDemoSceneAssets } from '../scene/createDemoScene';
 import { bootstrapCanvasKit } from '../skia/bootstrapCanvasKit';
 import { SkiaPixiRenderer } from '../skia/SkiaPixiRenderer';
 
@@ -12,31 +12,14 @@ export class App {
   private exportButton: HTMLButtonElement | null = null;
   private isStarted = false;
 
-  private readonly handleExportPdf = () => {
-    this.skiaRenderer?.exportPdf();
-  };
-
-  public constructor(
+  constructor(
     private readonly pixiRoot: HTMLElement,
     private readonly skiaRoot: HTMLElement,
   ) {}
 
-  public async start(): Promise<void> {
-    if (this.isStarted) {
-      return;
-    }
-
-    this.scene = createDemoScene();
-
-    this.pixiApp = createPixiApp(this.pixiRoot);
-    this.pixiApp.stage.addChild(this.scene);
-
-    this.skiaRenderer = await bootstrapCanvasKit(this.skiaRoot);
-    this.skiaRenderer.render(this.scene);
-    this.exportButton = this.setupExportButton();
-
-    this.isStarted = true;
-  }
+  private readonly handleExportPdf = () => {
+    this.skiaRenderer?.exportPdf();
+  };
 
   private setupExportButton(): HTMLButtonElement {
     const button = document.getElementById('export-pdf-button');
@@ -48,6 +31,24 @@ export class App {
     button.addEventListener('click', this.handleExportPdf);
 
     return button as HTMLButtonElement;
+  }
+
+  public async start(): Promise<void> {
+    if (this.isStarted) {
+      return;
+    }
+
+    await loadDemoSceneAssets();
+    this.scene = createDemoScene();
+
+    this.pixiApp = createPixiApp(this.pixiRoot);
+    this.pixiApp.stage.addChild(this.scene);
+
+    this.skiaRenderer = await bootstrapCanvasKit(this.skiaRoot);
+    this.skiaRenderer.render(this.scene);
+    this.exportButton = this.setupExportButton();
+
+    this.isStarted = true;
   }
 
   public destroy(): void {

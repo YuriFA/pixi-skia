@@ -1,4 +1,10 @@
-import { Circle, Container, Graphics } from 'pixi.js-legacy';
+import { Circle, Container, Graphics, Sprite, Assets } from 'pixi.js-legacy';
+
+const SPRITE_ASSETS = ['https://pixijs.com/assets/bunny.png'];
+
+export const loadDemoSceneAssets = () => {
+  return Assets.load(SPRITE_ASSETS);
+};
 
 export function createDemoScene(): Container {
   const container = new Container();
@@ -11,6 +17,11 @@ export function createDemoScene(): Container {
   const g5 = new Graphics();
   const g6 = new Graphics();
   const g7 = new Graphics();
+
+  const bunny = Sprite.from(SPRITE_ASSETS[0]);
+  bunny.anchor.set(0.5);
+  bunny.alpha = 0.5;
+  bunny.position.set(450, 300);
 
   container.sortableChildren = true;
 
@@ -52,7 +63,7 @@ export function createDemoScene(): Container {
   subContainer.alpha = 0.5;
   subContainer.position.set(75, 50);
   subContainer.addChild(g3, g4, g7, g6);
-  container.addChild(subContainer, g1, g2, g5);
+  container.addChild(subContainer, g1, g2, g5, bunny);
 
   return container;
 }
