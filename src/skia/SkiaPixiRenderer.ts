@@ -135,7 +135,8 @@ export class SkiaPixiRenderer {
     pdfDocument.endPage();
 
     const data = pdfDocument.closeAndToBytes();
-    const pdfBytes = Uint8Array.of(...data);
+    const pdfBytes = new Uint8Array(data.length);
+    pdfBytes.set(data);
     const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
     const pdfURL = URL.createObjectURL(pdfBlob);
 
