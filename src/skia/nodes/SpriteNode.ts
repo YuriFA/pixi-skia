@@ -38,19 +38,25 @@ const renderPixiSprite = ({
     return;
   }
 
-  const { frame } = sprite.texture;
-  canvas.concat(pixiMatrixToSkiaMatrix(sprite.worldTransform));
   const paint = new canvasKit.Paint();
   paint.setAlphaf(sprite.worldAlpha);
+
+  canvas.concat(pixiMatrixToSkiaMatrix(sprite.worldTransform));
+
+  const { frame, orig, trim } = sprite.texture;
+  const trimX = trim ? trim.x : 0;
+  const trimY = trim ? trim.y : 0;
+  const trimW = trim ? trim.width : frame.width;
+  const trimH = trim ? trim.height : frame.height;
 
   canvas.drawImageRect(
     image,
     canvasKit.XYWHRect(frame.x, frame.y, frame.width, frame.height),
     canvasKit.XYWHRect(
-      -sprite.anchor.x * sprite.width,
-      -sprite.anchor.y * sprite.height,
-      sprite.width,
-      sprite.height,
+      -sprite.anchor.x * orig.width + trimX,
+      -sprite.anchor.y * orig.height + trimY,
+      trimW,
+      trimH,
     ),
     paint,
     false,
