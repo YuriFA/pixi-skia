@@ -14,7 +14,7 @@
     "fmt:check": "oxfmt --check"
   },
   "dependencies": {
-    "canvaskit-wasm": "^0.40.0",
+    "canvaskit-wasm": "file:./canvaskit-wasm",
     "pixi.js-legacy": "7.4.2"
   },
   "devDependencies": {

@@ -1,4 +1,5 @@
 import { Application } from 'pixi.js-legacy';
+
 import { APP_CONFIG } from '../shared/config/appConfig';
 
 export function createPixiApp(root: HTMLElement): Application {

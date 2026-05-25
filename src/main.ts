@@ -1,4 +1,4 @@
-import './shared/ui/background.css';
+import './styles.css';
 import { bootstrap } from './app/bootstrap';
 
 bootstrap();

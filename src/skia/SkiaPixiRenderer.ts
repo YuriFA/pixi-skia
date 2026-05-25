@@ -1,8 +1,9 @@
-import type { Container } from 'pixi.js-legacy';
 import type { CanvasKit, Surface } from 'canvaskit-wasm';
-import { renderPixiContainer } from './renderPixiContainer';
-import { renderDemoScene } from './renderDemoScene';
+import type { Container } from 'pixi.js-legacy';
+
 import { APP_CONFIG } from '../shared/config/appConfig';
+// import { renderDemoScene } from './renderDemoScene';
+import { renderPixiContainer } from './renderPixiContainer';
 
 interface SkiaPixiRendererOptions {
   root: HTMLElement;
@@ -16,17 +17,15 @@ export class SkiaPixiRenderer {
   private resizeObserver: ResizeObserver;
   private pixelRatio: number = window.devicePixelRatio || 1;
 
-  public constructor(
-    private readonly options: SkiaPixiRendererOptions,
-  ) {
+  public constructor(private readonly options: SkiaPixiRendererOptions) {
     this.canvas = this.createCanvas();
     this.surface = this.createSurface();
 
     this.resizeObserver = new ResizeObserver((entries) => {
       this.resize({ width: entries[0].contentRect.width, height: entries[0].contentRect.height });
-    })
-    this.resizeObserver.observe(this.options.root)
-    this.resize({ width: this.options.root.clientWidth, height: this.options.root.clientHeight })
+    });
+    this.resizeObserver.observe(this.options.root);
+    this.resize({ width: this.options.root.clientWidth, height: this.options.root.clientHeight });
   }
 
   private createCanvas() {
@@ -46,14 +45,21 @@ export class SkiaPixiRenderer {
     return surface;
   }
 
-  private resize({ width, height }: { width: number, height: number }) {
-    const dpr = window.devicePixelRatio || 1
+  private resize({ width, height }: { width: number; height: number }) {
+    const w = Math.floor(width);
+    const h = Math.floor(height);
 
-    this.canvas.style.width = `${width}px`
-    this.canvas.style.height = `${height}px`
+    if (w === this.canvas.width && h === this.canvas.height) {
+      return;
+    }
 
-    this.canvas.width = Math.floor(width * dpr)
-    this.canvas.height = Math.floor(height * dpr)
+    const dpr = window.devicePixelRatio || 1;
+
+    this.canvas.style.width = `${w}px`;
+    this.canvas.style.height = `${h}px`;
+
+    this.canvas.width = w * dpr;
+    this.canvas.height = h * dpr;
 
     this.surface.delete();
     this.surface = this.createSurface();
@@ -79,6 +85,38 @@ export class SkiaPixiRenderer {
 
     skCanvas.restore();
     this.surface.flush();
+  }
+
+  public exportPdf() {
+    if (!this.lastContainer) {
+      return;
+    }
+
+    const pdfDocument = new this.options.canvasKit.PdfDocument();
+    const pdfCanvas = pdfDocument.beginPage(this.canvas.width, this.canvas.height);
+
+    renderPixiContainer({
+      canvas: pdfCanvas,
+      container: this.lastContainer,
+      canvasKit: this.options.canvasKit,
+    });
+
+    pdfDocument.endPage();
+
+    const data = pdfDocument.closeAndToBytes();
+    const pdfBytes = Uint8Array.of(...data);
+    const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const pdfURL = URL.createObjectURL(pdfBlob);
+
+    const downloadLink = document.createElement('a');
+    downloadLink.href = pdfURL;
+    downloadLink.download = 'skia_demo_scene.pdf';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+
+    URL.revokeObjectURL(pdfURL);
+
+    pdfDocument.delete();
   }
 
   public destroy(): void {

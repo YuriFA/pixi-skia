@@ -1,19 +1,25 @@
-import { createPixiApp } from '../pixi/createPixiApp';
-import { bootstrapCanvasKit } from '../skia/bootstrapCanvasKit';
 import { Application, Container } from 'pixi.js-legacy';
-import { SkiaPixiRenderer } from '../skia/SkiaPixiRenderer';
+
+import { createPixiApp } from '../pixi/createPixiApp';
 import { createDemoScene } from '../scene/createDemoScene';
+import { bootstrapCanvasKit } from '../skia/bootstrapCanvasKit';
+import { SkiaPixiRenderer } from '../skia/SkiaPixiRenderer';
 
 export class App {
   private pixiApp: Application | null = null;
   private skiaRenderer: SkiaPixiRenderer | null = null;
   private scene: Container | null = null;
+  private exportButton: HTMLButtonElement | null = null;
   private isStarted = false;
+
+  private readonly handleExportPdf = () => {
+    this.skiaRenderer?.exportPdf();
+  };
 
   public constructor(
     private readonly pixiRoot: HTMLElement,
-    private readonly skiaRoot: HTMLElement
-  ) { }
+    private readonly skiaRoot: HTMLElement,
+  ) {}
 
   public async start(): Promise<void> {
     if (this.isStarted) {
@@ -27,14 +33,31 @@ export class App {
 
     this.skiaRenderer = await bootstrapCanvasKit(this.skiaRoot);
     this.skiaRenderer.render(this.scene);
+    this.exportButton = this.setupExportButton();
 
     this.isStarted = true;
+  }
+
+  private setupExportButton(): HTMLButtonElement {
+    const button = document.getElementById('export-pdf-button');
+
+    if (!button) {
+      throw new Error('Export button not found');
+    }
+
+    button.addEventListener('click', this.handleExportPdf);
+
+    return button as HTMLButtonElement;
   }
 
   public destroy(): void {
     if (!this.isStarted) {
       return;
     }
+
+    this.exportButton?.removeEventListener('click', this.handleExportPdf);
+    this.exportButton?.remove();
+    this.exportButton = null;
 
     this.skiaRenderer?.destroy();
     this.skiaRenderer = null;
@@ -49,6 +72,4 @@ export class App {
     this.pixiApp = null;
     this.isStarted = false;
   }
-
-
 }
