@@ -50,7 +50,7 @@ body {
 
 .panel__label--pixi {
   color: #f4f7ff;
-  background: #ff4d86;
+  background: #e91e63;
 }
 
 .panel__label--skia {
@@ -58,20 +58,17 @@ body {
   background: rgb(101, 240, 210);
 }
 
-.export-button {
-  width: fit-content;
+.panel__control {
   padding: 4px 12px;
-  border: 1px solid rgba(101, 240, 210, 0.8);
   border-radius: 8px;
-  background: rgb(101, 240, 210, 0.5);
-  color: #e9fff9;
   font-weight: 600;
   cursor: pointer;
-}
+  background: #ccc;
+  border: 1px solid #eee;
 
-.export-button:hover {
-  background: rgba(101, 240, 210, 0.3);
-  border-color: rgba(101, 240, 210, 0.5);
+  &:hover {
+    background: #bbb;
+  }
 }
 
 .app {

@@ -8,14 +8,39 @@
   <body>
     <main class="container">
       <section class="panel">
-        <span class="panel__label panel__label--pixi">Pixi</span>
+        <div class="panel__header">
+          <span class="panel__label panel__label--pixi">Pixi</span>
+          <button
+            type="button"
+            id="random-graphics-button"
+            class="panel__control panel__control--random-graphics"
+          >
+            Random graphics
+          </button>
+          <button
+            type="button"
+            id="random-sprite-button"
+            class="panel__control panel__control--random-sprite"
+          >
+            Random sprite
+          </button>
+          <button type="button" id="clear-button" class="panel__control panel__control--clear">
+            Clear
+          </button>
+        </div>
         <div class="app" id="root-pixi"></div>
       </section>
 
       <section class="panel">
         <div class="panel__header">
           <span class="panel__label panel__label--skia">Skia</span>
-          <button type="button" id="export-pdf-button" class="export-button">Export to PDF</button>
+          <button
+            type="button"
+            id="export-pdf-button"
+            class="panel__control panel__control--export"
+          >
+            Export to PDF
+          </button>
         </div>
         <div class="app" id="root-skia"></div>
       </section>

@@ -1,74 +1,149 @@
-import { Circle, Container, Graphics, Sprite, Assets } from 'pixi.js-legacy';
+import { Container, Graphics, Sprite, Assets, Rectangle } from 'pixi.js-legacy';
 
-const SPRITE_ASSETS = ['https://pixijs.com/assets/bunny.png'];
+const SPRITE_ASSETS = [
+  'https://pixijs.com/assets/bunny.png',
+  'https://pixijs.com/assets/flowerTop.png',
+  'https://pixijs.com/assets/eggHead.png',
+  'https://pixijs.com/assets/p2.jpeg',
+];
 
 export const loadDemoSceneAssets = () => {
   return Assets.load(SPRITE_ASSETS);
 };
 
+export const unloadDemoSceneAssets = () => {
+  return Assets.unload(SPRITE_ASSETS);
+};
+
+const paramsForRandomGraphics = {
+  type: ['line', 'ellipse', 'rect', 'rrect', 'polygon', 'circle'],
+  size: [30, 50, 80, 100, 120],
+  alpha: [0.5, 1],
+  angle: [-45, 45, 0, 150, 200],
+  event: [null, 'pointerdown', 'pointerup'],
+  positionPercent: [
+    { x: 0.1, y: 0.1 },
+    { x: 0.5, y: 0.5 },
+    { x: 0.9, y: 0.9 },
+    { x: 0.1, y: 0.9 },
+    { x: 0.9, y: 0.1 },
+    { x: 0.5, y: 0.1 },
+    { x: 0.1, y: 0.5 },
+    { x: 0.3, y: 0.3 },
+    { x: 0.7, y: 0.7 },
+    { x: 0.3, y: 0.7 },
+    { x: 0.7, y: 0.3 },
+  ],
+  offsetPercent: [
+    { x: -0.1, y: -0.1 },
+    { x: 0, y: 0 },
+    { x: 0.1, y: 0.1 },
+    { x: -0.1, y: 0.1 },
+  ],
+  scale: [0.5, 1, 1.5, 2],
+  withFill: [true, false],
+  fillColor: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'],
+  strokeColor: ['#ffffff', '#ff8800', '#88ff00', '#0088ff'],
+  strokeWidth: [0, 0, 0, 0, 2, 4, 6, 8],
+};
+
+const strokeWidthForLine = paramsForRandomGraphics.strokeWidth.filter((item) => item > 0);
+
+const pickRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+
+export const getRandomSprite = (pixiScreen: Rectangle): Sprite => {
+  const asset = pickRandom(SPRITE_ASSETS);
+  const alpha = pickRandom(paramsForRandomGraphics.alpha);
+  const positionPercent = pickRandom(paramsForRandomGraphics.positionPercent);
+  const size = pickRandom(paramsForRandomGraphics.size);
+
+  const sprite = Sprite.from(asset);
+  sprite.width = size;
+  // respect aspect ratio
+  sprite.height = size * (sprite.texture.height / sprite.texture.width);
+  sprite.anchor.set(0.5);
+  sprite.alpha = alpha;
+  sprite.position.set(pixiScreen.width * positionPercent.x, pixiScreen.height * positionPercent.y);
+
+  return sprite;
+};
+
+export const getRandomGraphics = (pixiScreen: Rectangle): Graphics => {
+  const g = new Graphics();
+  const type = pickRandom(paramsForRandomGraphics.type);
+  const size = pickRandom(paramsForRandomGraphics.size);
+  const alpha = pickRandom(paramsForRandomGraphics.alpha);
+  const angle = pickRandom(paramsForRandomGraphics.angle);
+  const event = pickRandom(paramsForRandomGraphics.event);
+  const positionPercent = pickRandom(paramsForRandomGraphics.positionPercent);
+  const offsetPercent = pickRandom(paramsForRandomGraphics.offsetPercent);
+  const scale = pickRandom(paramsForRandomGraphics.scale);
+  const fillColor = pickRandom(paramsForRandomGraphics.fillColor);
+  const strokeColor = pickRandom(paramsForRandomGraphics.strokeColor);
+  const randomStrokeWidth = pickRandom(
+    type === 'line' ? strokeWidthForLine : paramsForRandomGraphics.strokeWidth,
+  );
+  const maxStroke = Math.max(1, Math.floor(size * 0.15));
+  const strokeWidth = Math.min(randomStrokeWidth, maxStroke);
+  const withFill =
+    type !== 'line' && (strokeWidth === 0 || pickRandom(paramsForRandomGraphics.withFill));
+
+  if (event) {
+    g.eventMode = event ? 'static' : 'none';
+    g.on(event, () => {
+      console.log(`Graphics ${event} event!`);
+    });
+  }
+
+  if (strokeWidth > 0) {
+    g.lineStyle(strokeWidth, strokeColor);
+    // g.lineStyle(strokeWidth, strokeColor, 1, 1);
+  }
+
+  if (withFill) {
+    g.beginFill(fillColor);
+  }
+
+  switch (type) {
+    case 'line': {
+      g.moveTo(size * offsetPercent.x, size * offsetPercent.y).lineTo(size, size);
+      break;
+    }
+    case 'ellipse': {
+      g.drawEllipse(size * offsetPercent.x, size * offsetPercent.y, size, size * 0.6);
+      break;
+    }
+    case 'rect': {
+      g.drawRect(size * offsetPercent.x, size * offsetPercent.y, size, size);
+      break;
+    }
+    case 'rrect': {
+      g.drawRoundedRect(size * offsetPercent.x, size * offsetPercent.y, size, size, size * 0.2);
+      break;
+    }
+    case 'polygon': {
+      g.drawPolygon([0, -size, size, 0, size * 0.5, size, -size * 0.5, size, -size, 0]);
+      break;
+    }
+    case 'circle': {
+      g.drawCircle(size * offsetPercent.x, size * offsetPercent.y, size);
+      break;
+    }
+  }
+
+  if (withFill) {
+    g.endFill();
+  }
+
+  g.position.set(pixiScreen.width * positionPercent.x, pixiScreen.height * positionPercent.y);
+  g.alpha = alpha;
+  g.angle = angle;
+  g.scale.set(scale, scale);
+
+  return g;
+};
+
 export function createDemoScene(): Container {
   const container = new Container();
-  const subContainer = new Container();
-
-  const g1 = new Graphics();
-  const g2 = new Graphics();
-  const g3 = new Graphics();
-  const g4 = new Graphics();
-  const g5 = new Graphics();
-  const g6 = new Graphics();
-  const g7 = new Graphics();
-
-  const bunny = Sprite.from(SPRITE_ASSETS[0]);
-  bunny.anchor.set(0.5);
-  bunny.alpha = 0.5;
-  bunny.position.set(450, 300);
-
-  container.sortableChildren = true;
-
-  container.eventMode = 'static';
-  container.on('pointerdown', () => {
-    console.log('container pointerdown!');
-  });
-  // container.interactiveChildren = false;
-  g1.zIndex = -1;
-  g1.beginFill('#ff0000').drawEllipse(120, 0, 200, 100).endFill();
-  g1.position.set(200, 100);
-  g1.angle = 30;
-  g1.eventMode = 'static';
-  g1.on('pointerdown', () => {
-    console.log('g1 pointerdown!');
-  });
-
-  g2.beginFill('#0000ff').drawRect(-50, -75, 100, 150).endFill();
-  g2.position.set(120, 60);
-  g2.angle = 15;
-  g2.scale.set(1.5, 1.7);
-  g2.eventMode = 'static';
-  g2.on('pointerup', () => {
-    console.log('g2 pointerup!');
-  });
-
-  g3.lineStyle(10, '#ffffff', 1).moveTo(0, 0).lineTo(150, 100);
-  g3.angle = -20;
-  g3.position.set(275, 50);
-
-  g4.lineStyle(10, '#ffff00', 1).moveTo(0, 70).lineTo(150, -30);
-  g4.angle = 20;
-
-  g5.lineStyle(15, '#AFCA8B', 1)
-    .beginFill('#f1A01f')
-    .drawShape(new Circle(200, 300, 100))
-    .endFill();
-
-  g6.beginFill('#C1B2F3').drawRoundedRect(300, 200, 150, 100, 20);
-
-  g7.beginFill('#F3B2C1').drawPolygon([500, 100, 550, 150, 500, 200, 450, 150]).endFill();
-  g7.position.set(-210, -100);
-
-  subContainer.alpha = 0.5;
-  subContainer.position.set(75, 50);
-  subContainer.addChild(g3, g4, g7, g6);
-  container.addChild(subContainer, g1, g2, g5, bunny);
-
   return container;
 }

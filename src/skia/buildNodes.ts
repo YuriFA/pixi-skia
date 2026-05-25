@@ -24,6 +24,7 @@ export const buildNodes = (container: PIXI.Container): PixiSkiaNode[] => {
     }
   };
 
+  // NOTE: PIXI.Container already sorted by zIndex, so we can just traverse it in order
   container.children.forEach(traverse);
 
   return nodes;
