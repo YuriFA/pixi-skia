@@ -2,8 +2,9 @@ import type { CanvasKit, Surface } from 'canvaskit-wasm';
 import type { Container } from 'pixi.js-legacy';
 
 import { APP_CONFIG } from '../shared/config/appConfig';
-// import { renderDemoScene } from './renderDemoScene';
-import { renderPixiContainer } from './renderPixiContainer';
+import { buildNodes } from './buildNodes';
+import { SupportedEvents } from './nodes/lib/types';
+import { PixiSkiaNode } from './nodes/SkiaNode';
 
 interface SkiaPixiRendererOptions {
   root: HTMLElement;
@@ -14,11 +15,13 @@ export class SkiaPixiRenderer {
   private canvas: HTMLCanvasElement;
   private surface: Surface;
   private lastContainer: Container | null = null;
+  private nodes: PixiSkiaNode[] = [];
   private resizeObserver: ResizeObserver;
   private pixelRatio: number = window.devicePixelRatio || 1;
 
   public constructor(private readonly options: SkiaPixiRendererOptions) {
     this.canvas = this.createCanvas();
+    this.setupCanvasEvents();
     this.surface = this.createSurface();
 
     this.resizeObserver = new ResizeObserver((entries) => {
@@ -35,6 +38,25 @@ export class SkiaPixiRenderer {
     return canvas;
   }
 
+  private handlePointerEvent = (e: PointerEvent) => {
+    for (let i = this.nodes.length - 1; i >= 0; i--) {
+      if (this.nodes[i].hitTest(e.offsetX, e.offsetY)) {
+        this.nodes[i].emit(e.type as SupportedEvents, e);
+        break;
+      }
+    }
+  };
+
+  private setupCanvasEvents() {
+    this.canvas.addEventListener('pointerdown', this.handlePointerEvent);
+    this.canvas.addEventListener('pointerup', this.handlePointerEvent);
+  }
+
+  private destroyCanvasEvents() {
+    this.canvas.removeEventListener('pointerdown', this.handlePointerEvent);
+    this.canvas.removeEventListener('pointerup', this.handlePointerEvent);
+  }
+
   private createSurface() {
     const surface = this.options.canvasKit.MakeWebGLCanvasSurface(this.canvas);
 
@@ -46,25 +68,28 @@ export class SkiaPixiRenderer {
   }
 
   private resize({ width, height }: { width: number; height: number }) {
-    const w = Math.floor(width);
-    const h = Math.floor(height);
-
-    if (w === this.canvas.width && h === this.canvas.height) {
+    if (width === 0 || height === 0) {
       return;
     }
 
     const dpr = window.devicePixelRatio || 1;
+    const widthWithDpr = Math.floor(width * dpr);
+    const heightWithDpr = Math.floor(height * dpr);
 
-    this.canvas.style.width = `${w}px`;
-    this.canvas.style.height = `${h}px`;
+    if (widthWithDpr === this.canvas.width && heightWithDpr === this.canvas.height) {
+      return;
+    }
 
-    this.canvas.width = w * dpr;
-    this.canvas.height = h * dpr;
+    this.pixelRatio = dpr;
+
+    this.canvas.style.width = `${width}px`;
+    this.canvas.style.height = `${height}px`;
+
+    this.canvas.width = widthWithDpr;
+    this.canvas.height = heightWithDpr;
 
     this.surface.delete();
     this.surface = this.createSurface();
-
-    this.pixelRatio = dpr;
 
     if (this.lastContainer) {
       this.render(this.lastContainer);
@@ -73,6 +98,8 @@ export class SkiaPixiRenderer {
 
   public render(container: Container) {
     this.lastContainer = container;
+    this.nodes = buildNodes(container);
+
     const skCanvas = this.surface.getCanvas();
 
     skCanvas.clear(APP_CONFIG.backgroundColor);
@@ -80,25 +107,29 @@ export class SkiaPixiRenderer {
     skCanvas.save();
     skCanvas.scale(this.pixelRatio, this.pixelRatio);
 
-    renderPixiContainer({ canvas: skCanvas, container, canvasKit: this.options.canvasKit });
-    // renderDemoScene({ canvas: skCanvas, canvasKit: this.options.canvasKit });
+    this.nodes.forEach((node) => {
+      node.render(skCanvas, this.options.canvasKit);
+    });
 
     skCanvas.restore();
     this.surface.flush();
   }
 
   public exportPdf() {
-    if (!this.lastContainer) {
+    if (this.nodes.length === 0) {
       return;
     }
 
     const pdfDocument = new this.options.canvasKit.PdfDocument();
-    const pdfCanvas = pdfDocument.beginPage(this.canvas.width, this.canvas.height);
+    // width/height for real size of canvas in browser
+    const pdfCanvas = pdfDocument.beginPage(
+      parseInt(this.canvas.style.width),
+      parseInt(this.canvas.style.height),
+    );
+    pdfCanvas.clear(APP_CONFIG.backgroundColor);
 
-    renderPixiContainer({
-      canvas: pdfCanvas,
-      container: this.lastContainer,
-      canvasKit: this.options.canvasKit,
+    this.nodes.forEach((node) => {
+      node.render(pdfCanvas, this.options.canvasKit);
     });
 
     pdfDocument.endPage();
@@ -115,11 +146,13 @@ export class SkiaPixiRenderer {
     downloadLink.click();
 
     URL.revokeObjectURL(pdfURL);
+    document.body.removeChild(downloadLink);
 
     pdfDocument.delete();
   }
 
   public destroy(): void {
+    this.destroyCanvasEvents();
     this.surface.delete();
     this.resizeObserver.disconnect();
     this.options.root.removeChild(this.canvas);

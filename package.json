@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "lint": "oxlint",
+    "lint": "pnpm lint:ts && pnpm lint:js",
+    "lint:ts": "tsc --noEmit",
+    "lint:js": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check"

@@ -25,6 +25,11 @@ export function createDemoScene(): Container {
 
   container.sortableChildren = true;
 
+  container.eventMode = 'static';
+  container.on('pointerdown', () => {
+    console.log('container pointerdown!');
+  });
+  // container.interactiveChildren = false;
   g1.zIndex = -1;
   g1.beginFill('#ff0000').drawEllipse(120, 0, 200, 100).endFill();
   g1.position.set(200, 100);
