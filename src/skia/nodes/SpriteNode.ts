@@ -14,7 +14,7 @@ const getCanvasKitImageFromSprite = ({
 }) => {
   const source =
     'source' in sprite.texture.baseTexture.resource
-      ? (sprite.texture.baseTexture.resource?.source as CanvasImageSource)
+      ? (sprite.texture.baseTexture.resource.source as CanvasImageSource)
       : null;
 
   if (!source) {

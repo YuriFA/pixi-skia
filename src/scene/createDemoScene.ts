@@ -20,7 +20,7 @@ const paramsForRandomGraphics = {
   size: [30, 50, 80, 100, 120],
   alpha: [0.5, 1],
   angle: [-45, 45, 0, 150, 200],
-  event: [null, 'pointerdown', 'pointerup'],
+  event: [null, 'pointerdown', 'pointerup'] as const,
   positionPercent: [
     { x: 0.1, y: 0.1 },
     { x: 0.5, y: 0.5 },
@@ -49,7 +49,7 @@ const paramsForRandomGraphics = {
 
 const strokeWidthForLine = paramsForRandomGraphics.strokeWidth.filter((item) => item > 0);
 
-const pickRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+const pickRandom = <T>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
 export const getRandomSprite = (pixiScreen: Rectangle): Sprite => {
   const asset = pickRandom(SPRITE_ASSETS);

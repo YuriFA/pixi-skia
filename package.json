@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "canvaskit-wasm": "file:./canvaskit-wasm",
-    "pixi.js-legacy": "7.4.2"
+    "pixi.js-legacy": "7.2.4"
   },
   "devDependencies": {
     "oxfmt": "^0.51.0",

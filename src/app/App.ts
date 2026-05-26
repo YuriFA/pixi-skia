@@ -55,7 +55,7 @@ export class App {
       return;
     }
 
-    this.scene.removeChildren();
+    this.scene.removeChildren().forEach((child) => child.destroy());
     this.syncRenderSkia();
   };
 
@@ -78,8 +78,13 @@ export class App {
   private destroyControlButtons(): void {
     this.exportButton?.removeEventListener('click', this.handleExportPdf);
     this.exportButton = null;
+
     this.randomGraphicsButton?.removeEventListener('click', this.handleAddRandomGraphics);
     this.randomGraphicsButton = null;
+
+    this.randomSpriteButton?.removeEventListener('click', this.handleAddRandomSprite);
+    this.randomSpriteButton = null;
+
     this.clearButton?.removeEventListener('click', this.handleClearScene);
     this.clearButton = null;
   }
@@ -99,6 +104,8 @@ export class App {
       return;
     }
 
+    this.isStarted = true;
+
     this.setupControlButtons();
 
     await loadDemoSceneAssets();
@@ -112,8 +119,6 @@ export class App {
 
     this.skiaRenderer = await bootstrapCanvasKit(this.skiaRoot);
     this.syncRenderSkia();
-
-    this.isStarted = true;
   }
 
   public destroy(): void {

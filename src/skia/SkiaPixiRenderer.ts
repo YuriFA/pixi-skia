@@ -121,6 +121,7 @@ export class SkiaPixiRenderer {
     }
 
     const pdfDocument = new this.options.canvasKit.PdfDocument();
+    
     // width/height for real size of canvas in browser
     const pdfCanvas = pdfDocument.beginPage(
       parseInt(this.canvas.style.width),
@@ -157,5 +158,7 @@ export class SkiaPixiRenderer {
     this.surface.delete();
     this.resizeObserver.disconnect();
     this.options.root.removeChild(this.canvas);
+    this.lastContainer = null;
+    this.nodes = [];
   }
 }

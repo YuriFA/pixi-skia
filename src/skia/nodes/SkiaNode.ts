@@ -15,7 +15,7 @@ export abstract class PixiSkiaNodeDisplayObject implements PixiSkiaNode {
   abstract render(canvas: Canvas, canvasKit: CanvasKit): void;
 
   public hitTest(x: number, y: number): boolean {
-    if (!this.displayObject.isInteractive) {
+    if (!this.displayObject.isInteractive()) {
       return false;
     }
 
